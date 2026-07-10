@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesOrderController extends Controller
 {
@@ -72,6 +73,29 @@ class SalesOrderController extends Controller
                 ])
                 ->values(),
         ]);
+    }
+
+    public function export(): StreamedResponse
+    {
+        $orders = SalesOrder::all();
+
+        return response()->streamDownload(function () use ($orders) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['受注番号', '顧客名', '受注日', 'ステータス', '明細数', '合計']);
+
+            foreach ($orders as $order) {
+                fputcsv($out, [
+                    $order->order_number,
+                    $order->customer->name,
+                    $order->order_date->format('Y-m-d'),
+                    $order->status->label(),
+                    $order->items->count(),
+                    $order->total,
+                ]);
+            }
+
+            fclose($out);
+        }, 'sales_orders.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function updateStatus(Request $request, SalesOrder $salesOrder, InventoryService $inventory): RedirectResponse

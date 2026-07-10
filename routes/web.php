@@ -34,5 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('purchase-orders.status');
 });
 
+Route::get('sales-orders-export', [SalesOrderController::class, 'export'])
+    ->name('sales-orders.export');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

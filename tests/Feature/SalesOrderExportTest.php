@@ -10,6 +10,6 @@ test('受注CSVをダウンロードできる', function () {
     $response = $this->get(route('sales-orders.export'));
 
     $response->assertOk();
-    $response->assertHeader('Content-Type', 'text/csv');
+    $response->assertHeader('Content-Type', 'text/csv; charset=utf-8');
     expect($response->streamedContent())->toContain('受注番号');
 });

@@ -18,20 +18,14 @@ class InventoryService
      */
     public function transitionSalesOrder(SalesOrder $order, SalesOrderStatus $to): SalesOrder
     {
-        if (! $order->status->canTransitionTo($to)) {
-            throw ValidationException::withMessages([
-                'status' => "{$order->status->label()} から {$to->label()} へは変更できません。",
-            ]);
-        }
+        $this->assertTransition($order->status->canTransitionTo($to), $order->status->label(), $to->label());
 
         return DB::transaction(function () use ($order, $to) {
-            if ($to === SalesOrderStatus::Confirmed) {
-                $this->allocateStock($order);
-            }
-
-            if ($to === SalesOrderStatus::Cancelled && $order->status !== SalesOrderStatus::Draft) {
-                $this->releaseStock($order);
-            }
+            match (true) {
+                $to === SalesOrderStatus::Confirmed => $this->allocateStock($order),
+                $to === SalesOrderStatus::Cancelled && $order->status !== SalesOrderStatus::Draft => $this->adjustStockForItems($order, +1),
+                default => null,
+            };
 
             $order->update(['status' => $to]);
 
@@ -44,17 +38,11 @@ class InventoryService
      */
     public function transitionPurchaseOrder(PurchaseOrder $order, PurchaseOrderStatus $to): PurchaseOrder
     {
-        if (! $order->status->canTransitionTo($to)) {
-            throw ValidationException::withMessages([
-                'status' => "{$order->status->label()} から {$to->label()} へは変更できません。",
-            ]);
-        }
+        $this->assertTransition($order->status->canTransitionTo($to), $order->status->label(), $to->label());
 
         return DB::transaction(function () use ($order, $to) {
             if ($to === PurchaseOrderStatus::Received) {
-                foreach ($order->items as $item) {
-                    Product::whereKey($item->product_id)->increment('stock_qty', $item->qty);
-                }
+                $this->adjustStockForItems($order, +1);
             }
 
             $order->update(['status' => $to]);
@@ -65,23 +53,32 @@ class InventoryService
 
     private function allocateStock(SalesOrder $order): void
     {
-        foreach ($order->items()->with('product')->get() as $item) {
-            $product = Product::whereKey($item->product_id)->lockForUpdate()->first();
+        $order->items->each(function ($item) {
+            $product = $item->product;
 
-            if ($product->stock_qty < $item->qty) {
+            if ($product->stock_qty <= $item->qty) {
                 throw ValidationException::withMessages([
                     'status' => "{$product->name} の在庫が不足しています(在庫: {$product->stock_qty}、必要: {$item->qty})。",
                 ]);
             }
+        });
 
-            $product->decrement('stock_qty', $item->qty);
-        }
+        $this->adjustStockForItems($order, -1);
     }
 
-    private function releaseStock(SalesOrder $order): void
+    private function adjustStockForItems(SalesOrder|PurchaseOrder $order, int $direction): void
     {
-        foreach ($order->items as $item) {
-            Product::whereKey($item->product_id)->increment('stock_qty', $item->qty);
+        $order->items->each(function ($item) use ($direction) {
+            Product::whereKey($item->product_id)->increment('stock_qty', $direction * $item->qty);
+        });
+    }
+
+    private function assertTransition(bool $allowed, string $fromLabel, string $toLabel): void
+    {
+        if (! $allowed) {
+            throw ValidationException::withMessages([
+                'status' => "{$fromLabel} から {$toLabel} へは変更できません。",
+            ]);
         }
     }
 }

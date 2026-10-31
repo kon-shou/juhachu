@@ -46,3 +46,4 @@ php artisan test
 | `app/Http/Controllers/` | Inertia レスポンスを返すコントローラ |
 | `resources/js/pages/` | Vue ページ(customers / products / sales-orders など) |
 | `tests/Feature/` | Pest による Feature テスト |
+| `routes/web.php` | 画面のルート定義 |

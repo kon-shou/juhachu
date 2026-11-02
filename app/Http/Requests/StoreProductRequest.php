@@ -17,7 +17,7 @@ class StoreProductRequest extends FormRequest
                 Rule::unique('products')->ignore($this->route('product')),
             ],
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'integer'],
+            'price' => ['required', 'integer', 'min:0'],
             'cost' => ['required', 'integer', 'min:0'],
             'stock_qty' => ['required', 'integer', 'min:0'],
             'supplier_id' => ['required', 'exists:suppliers,id'],

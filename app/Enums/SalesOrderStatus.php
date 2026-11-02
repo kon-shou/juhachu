@@ -16,7 +16,7 @@ enum SalesOrderStatus: string
     public function transitions(): array
     {
         return match ($this) {
-            self::Draft => [self::Confirmed, self::Cancelled],
+            self::Draft => [self::Confirmed, self::Shipped, self::Cancelled],
             self::Confirmed => [self::Shipped, self::Cancelled],
             self::Shipped => [self::Closed],
             self::Closed, self::Cancelled => [],

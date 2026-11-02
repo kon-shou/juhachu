@@ -77,19 +77,22 @@ class SalesOrderController extends Controller
 
     public function export(): StreamedResponse
     {
-        $orders = SalesOrder::all();
+        $orders = SalesOrder::with('customer:id,name')
+            ->withCount('items')
+            ->latest('order_date')
+            ->latest('id');
 
         return response()->streamDownload(function () use ($orders) {
             $out = fopen('php://output', 'w');
             fputcsv($out, ['受注番号', '顧客名', '受注日', 'ステータス', '明細数', '合計']);
 
-            foreach ($orders as $order) {
+            foreach ($orders->lazy() as $order) {
                 fputcsv($out, [
                     $order->order_number,
                     $order->customer->name,
                     $order->order_date->format('Y-m-d'),
                     $order->status->label(),
-                    $order->items->count(),
+                    $order->items_count,
                     $order->total,
                 ]);
             }

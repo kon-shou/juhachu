@@ -47,3 +47,6 @@ php artisan test
 | `resources/js/pages/` | Vue ページ(customers / products / sales-orders など) |
 | `tests/Feature/` | Pest による Feature テスト |
 | `routes/web.php` | 画面のルート定義 |
+| `routes/auth.php` | ログイン・登録・パスワード再設定などの認証のルート定義 |
+| `routes/settings.php` | プロフィール・パスワード・外観の設定画面のルート定義 |
+| `routes/console.php` | Artisan コマンドの定義 |

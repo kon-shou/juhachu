@@ -15,6 +15,7 @@ class StoreCustomerRequest extends FormRequest
                 'required',
                 'email',
                 'max:255',
+                Rule::unique('customers')->ignore($this->route('customer')),
             ],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],

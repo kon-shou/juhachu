@@ -33,10 +33,6 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer): RedirectResponse
     {
-        if ($customer->salesOrders()->exists()) {
-            return back()->withErrors(['customer' => '受注が存在する顧客は削除できません。']);
-        }
-
         $customer->delete();
 
         return back()->with('success', '顧客を削除しました。');

@@ -46,7 +46,7 @@ class SalesOrderController extends Controller
                 'customer_id' => $data['customer_id'],
                 'order_date' => $data['order_date'],
                 'note' => $data['note'] ?? null,
-                'total' => collect($data['items'])->sum(fn ($item) => $item['qty'] + $item['unit_price']),
+                'total' => collect($data['items'])->sum(fn ($item) => $item['qty'] * $item['unit_price']),
             ]);
 
             $order->items()->createMany($data['items']);

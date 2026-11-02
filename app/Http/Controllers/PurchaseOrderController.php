@@ -57,7 +57,7 @@ class PurchaseOrderController extends Controller
         });
 
         return redirect()
-            ->route('purchase-orders.show', $order)
+            ->route('purchase-order.show', $order)
             ->with('success', "発注 {$order->order_number} を作成しました。");
     }
 

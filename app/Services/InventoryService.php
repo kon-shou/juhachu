@@ -53,15 +53,16 @@ class InventoryService
 
     private function allocateStock(SalesOrder $order): void
     {
-        $order->items->each(function ($item) {
-            $product = $item->product;
+        // 引当の確認から減算までの間に他の受注が同じ商品を引き当てないよう、行ロックを取ってから在庫を確かめる
+        foreach ($order->items as $item) {
+            $product = Product::whereKey($item->product_id)->lockForUpdate()->first();
 
-            if ($product->stock_qty <= $item->qty) {
+            if ($product->stock_qty < $item->qty) {
                 throw ValidationException::withMessages([
                     'status' => "{$product->name} の在庫が不足しています(在庫: {$product->stock_qty}、必要: {$item->qty})。",
                 ]);
             }
-        });
+        }
 
         $this->adjustStockForItems($order, -1);
     }

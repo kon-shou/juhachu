@@ -53,7 +53,7 @@ class InventoryService
         return DB::transaction(function () use ($order, $to) {
             if ($to === PurchaseOrderStatus::Received) {
                 foreach ($order->items as $item) {
-                    Product::whereKey($item->product_id)->increment('stock_qty', $item->qty);
+                    Product::whereKey($item->product_id)->decrement('stock_qty', $item->qty);
                 }
             }
 

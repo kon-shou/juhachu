@@ -13,7 +13,15 @@ class StockAlertCommand extends Command
 
     public function handle(): int
     {
-        $threshold = (int) $this->option('threshold');
+        $option = (string) $this->option('threshold');
+
+        if (! ctype_digit($option)) {
+            $this->error('--threshold には 0 以上の整数を指定してください。');
+
+            return self::INVALID;
+        }
+
+        $threshold = (int) $option;
 
         $products = Product::with('supplier')
             ->where('stock_qty', '<', $threshold)

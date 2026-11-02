@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['index', 'create', 'store', 'show']);
     Route::patch('sales-orders/{sales_order}/status', [SalesOrderController::class, 'updateStatus'])
         ->name('sales-orders.status');
+    Route::get('sales-orders-export', [SalesOrderController::class, 'export'])
+        ->name('sales-orders.export');
 
     Route::resource('purchase-orders', PurchaseOrderController::class)
         ->only(['index', 'create', 'store', 'show']);

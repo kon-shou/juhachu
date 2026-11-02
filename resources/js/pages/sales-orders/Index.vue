@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { formatDate, formatYen, salesOrderStatusLabels } from '@/lib/orders';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Download, Plus } from 'lucide-vue-next';
 
 interface Order {
     id: number;
@@ -31,12 +31,20 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: '受注', href: '/sales-orders' 
         <div class="flex h-full flex-1 flex-col gap-4 p-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-xl font-semibold">受注</h1>
-                <Button as-child>
-                    <Link :href="route('sales-orders.create')">
-                        <Plus class="h-4 w-4" />
-                        新規受注
-                    </Link>
-                </Button>
+                <div class="flex gap-2">
+                    <Button variant="outline" as-child>
+                        <a :href="route('sales-orders.export')">
+                            <Download class="h-4 w-4" />
+                            CSVエクスポート
+                        </a>
+                    </Button>
+                    <Button as-child>
+                        <Link :href="route('sales-orders.create')">
+                            <Plus class="h-4 w-4" />
+                            新規受注
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <div class="overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">

@@ -74,6 +74,17 @@ test('在庫不足の受注は確定できない', function () {
         ->and($order->items->first()->product->fresh()->stock_qty)->toBe(3);
 });
 
+test('在庫と同数の受注は確定でき在庫が0になる', function () {
+    $order = makeDraftOrder(stock: 5, qty: 5);
+
+    $this->patch(route('sales-orders.status', $order), [
+        'status' => SalesOrderStatus::Confirmed->value,
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect($order->fresh()->status)->toBe(SalesOrderStatus::Confirmed)
+        ->and($order->items->first()->product->fresh()->stock_qty)->toBe(0);
+});
+
 test('確定済み受注をキャンセルすると在庫が戻る', function () {
     $order = makeDraftOrder(stock: 100, qty: 5);
 

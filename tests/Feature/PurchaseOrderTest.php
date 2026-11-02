@@ -14,15 +14,16 @@ test('明細つきで発注を作成できる', function () {
     $supplier = Supplier::factory()->create();
     $product = Product::factory()->for($supplier)->create();
 
-    $this->post(route('purchase-orders.store'), [
+    $response = $this->post(route('purchase-orders.store'), [
         'supplier_id' => $supplier->id,
         'order_date' => '2026-07-01',
         'items' => [
             ['product_id' => $product->id, 'qty' => 10, 'unit_cost' => 300],
         ],
-    ])->assertRedirect();
+    ]);
 
     $order = PurchaseOrder::latest('id')->first();
+    $response->assertRedirect(route('purchase-orders.show', $order));
     expect($order->items)->toHaveCount(1)
         ->and($order->total)->toBe(3000)
         ->and($order->status)->toBe(PurchaseOrderStatus::Draft);
